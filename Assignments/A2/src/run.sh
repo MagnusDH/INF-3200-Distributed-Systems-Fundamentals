@@ -1,59 +1,34 @@
 #!/bin/bash
 
 #Print a message
-echo -e "\n########## Running shell script ##########\n"
+# echo -e "\n########## Running shell script ##########\n"
 
 #Fetch number of servers that should be started
 num_servers=$1 #Fetches command line argument #1
 
-#echo "Number of servers that should be started: ${num_servers}"
-
 #Fetch nodes that are available
-# available_nodes=($(/share/ifi/available-nodes.sh))
+available_nodes=($(/share/ifi/available-nodes.sh))
 
-#Fetch the number of nodes that are available
-# num_nodes=${#available_nodes[@]}
-#echo "Number of available nodes: ${num_nodes}"
+#Start each server and add their IP addresses to a list
+server_list=()
+for (( i=0; i<num_servers; i++ )); do
+        #Find node to start server on
+        current_node=${available_nodes[$(( i % num_servers ))]}
 
-#List of started servers
-# JSON_list=()
+        #Create a unique port number for this server
+        current_port=$(shuf -i 49152-65535 -n1)
 
-# for (( i=0; i<num_servers; i++ )); do
-#         #Find node to start server on
-#         current_node=${available_nodes[$(( i % num_nodes ))]}
+        #ssh into each node and start a background server on that node with a specific port number
+        ssh -f ${current_node} "python3 $PWD/server.py ${current_port}"
 
-#         #Create a unique port number
-#         current_port=$(shuf -i 49152-65535 -n1)
+        #Add server to list
+        server_list+=("${current_node}:${current_port}")
+done
 
-#         #Start a background server on current_node with specific port number
-#         ssh -f ${current_node} "python3 $PWD/server_app.py ${current_port}"
-#         #echo "Started server on ${current_node}:${current_port}"
+#Run a python file that initializes the ring with IDs and finger tables
+sleep 2
+python3 initialize_ring.py ${server_list[@]}
 
-#         #Add server to JSON-list
-#         JSON_list+=("${current_node}:${current_port}")
-# done
-
-#Convert JSON_list into string
-# json_string="["
-
-# for i in "${!JSON_list[@]}"; do
-#     element="${JSON_list[$i]}"
-#     json_string+="\"${element}\""
-
-#     #If this is NOT the last element, add comma
-#     if [ "$i" -lt $((${#JSON_list[@]} - 1)) ]; then
-#         json_string+=", "
-#     fi
-# done
-
-# #Add closing brack to string
-# json_string+="]"
-# sleep 1
-# echo -e "\nJSON-LIST TO COPY FOR TESTSCRIPT.PY:"
-# echo "$json_string"
-# echo -e "\n"
-
-#echo -e "\n########## Running testscript.py automaticly in ##########"
-#Waiting 2 secons to make sure the servers have started before running testscript.py
-#sleep 2
-#python3 testscript.py "$json_string"
+#Run client-py to simulate a user of the system
+sleep 2
+python3 client.py ${server_list[0]}
