@@ -1,6 +1,9 @@
 from flask import Flask, request
 import socket
 import sys
+import hashlib
+import requests
+
 
 # Silence werkzeug logs
 import logging
@@ -12,9 +15,6 @@ app = Flask(__name__)
 #Get the name of the current node
 HOSTNAME = socket.gethostname().split('.')[0]
 
-Server_ID = None
-finger_table = None
-
 #Port number given by user
 if len(sys.argv) > 1:
     PORT = int(sys.argv[1])
@@ -25,107 +25,157 @@ else:
 #the data that is stored in this server
 stored_data = {}
 
+m=10
+global total_IDs
+total_IDs = 2**m
+
+my_ID = None
+finger_table = {}
+predecessor_ID = None
+successor_ID = None
+
 
 #This code wil be run when someone visits the given url-path
 @app.route("/")
 def home():
+    print("HOME()")
     return f"This is server: {ID} running at: {HOSTNAME}:{PORT}"
 
 
 @app.route("/initialize", methods=["POST"])
 def initialize_server():
+    print("INITIALIZE_SERVER()")
+
     #Recieve data
-    recieved_data = request.get_json() 
-    
+    recieved_data = request.get_json()
+
     #Unpack data
-    ID = recieved_data.get("ID")
-    finger_table = recieved_data.get("finger_table")
+    recieved_ID = recieved_data.get("ID")
+    recieved_finger_table = recieved_data.get("finger_table")
+    recieved_successor_ID = recieved_data.get("successor_ID")
+    recieved_predecessor_ID = recieved_data.get("predecessor_ID")
 
-    #Set values
-    server_ID = ID
-    finger_table = finger_table
+    #Assign values to global varibales
+    global my_ID
+    global finger_table
+    global predecessor_ID
+    global successor_ID
 
-    return f"{HOSTNAME}:{PORT}: I recieved the payload: ID:{ID}, finger_table:{finger_table}.", 200
+    my_ID = int(recieved_ID)
+    for key in recieved_finger_table:
+        finger_table[int(key)] = recieved_finger_table[key]
+    successor_ID = int(recieved_successor_ID)
+    predecessor_ID = int(recieved_predecessor_ID)
+    
+    print(f"    My server ID: {my_ID}")
+    print(f"    My finger_table: {finger_table}")
+    print(f"    My successor_ID: {successor_ID}")
+    print(f"    My predecessor_ID: {predecessor_ID}")
+
+    return f"{HOSTNAME}:{PORT} is initialized.", 200
 
 
 @app.route("/put", methods=["POST"])
 def put_data():
 
+    print("PUT_DATA()")
+
     #Recieve data
     recieved_data = request.get_json()
-    key = list(recieved_data.keys())[0]
-    value = recieved_data[key]
     
-    #Store the clients IP_address
-    client_IP_address = request.remote_addr
+    #Unpack data
+    client_IP_address = recieved_data["client_IP"]
+    key = recieved_data["data"][0]
+    value = recieved_data["data"][1]
+
+    print(f"    Recieved data: {recieved_data}")
+    
+    #Create integer hash value for the key using SHA-1
+    key_ID = hashlib.sha1(key.encode('utf-8')).hexdigest()
+    key_ID = int(key_ID, 16)
+    key_ID = key_ID % total_IDs
 
 
-    #HASH TKE HEY USING SHA-1
-    #Convert the key to bytes
-    bytes_key = key.encode()
-    #Hash the key using SHA-1
-    hashed_key = hashlib.sha1(bytes_key)
-    #Convert the hashed key into a hexadecimal string
-    hash_hex = hashed_key.hexdigest()
-    #Convert the hexadecimal string to integer
-    hash_int = int(hash_hex, 16)
+    #MAKE CHECKS TO SEE WHERE THE DATA SHOULD BE STORED
 
-    #Convert hash value into a server_ID
-    responsible_server = hash_int % total_IDs
-
-
-    #FIND SERVER THAT IS RESPONSIBLE FOR THE DATA
     #This server is responsible for saving the data
-    if(server_ID == responsible_server):
+    if(is_ID_in_range(predecessor_ID, my_ID, key_ID) == True):
+        print(f"     I am server: {my_ID} and I'm responsible for saving the data. Saving data...")
+        #Store key and value
+        global stored_data
         stored_data[key] = value
 
         #send return message to client
-        return f"{HOSTNAME}:{PORT}: I stored the data: {recieved_data}", 200
+        return f"Node:{my_ID} has stored the data", 200
 
 
-    #Another server is responsible to save the data
-    else:
-        #if the responsible server is contained in the finger table
-        if(responsible_server in finger_table):
-            try:
-                print(f"\n{HOSTNAME}:{PORT}: I can not store the data, but I know the node that can. Forwarding it to server:{responsible_server}")
-
-                response = requests.post(f"http://{finger_table[responsible_server]}/put", json=recieved_data)
-                print(f"{HOSTNAME}:{PORT}: received message from server:{server_to_contact}: {response.text}")
-
-            except Exception as e:
-                print(f"{HOSTNAME}:{PORT}: request sent to server:{server_to_contact} failed. ERROR: {e}\n")
+    #If the key_ID is in the range of my successor
+    if(is_ID_in_range(my_ID, successor_ID, key_ID) == True):
+        print(f"    I can not store the data, but the key_ID:{key_ID} is in range for my successor")
         
-        #The responsible server is not in the finger table
-        else:
-            #find the ID in the finger table that is closest to the actuall server
-            closest_server = 0
-            for ID in finger_table:
-                if(ID <= responsible_server):
-                    closest_server = ID
+        #Forward PUT-request to successor server
+        print(f"    Forwarding PUT-request to server:{successor_ID}...")
+        response = requests.post(f"http://{finger_table[successor_ID]}/put", json=recieved_data)
+        print(f"    Received response from server:{finger_table[successor_ID]}: {response.text}")
 
-        #forward the original message
-        print(f"\n{HOSTNAME}:{PORT}: I can not store the data. forwarding it to closest server:{closest_server}")
+        return response.text, 200
 
+
+    #If the key is not in range, forward PUT-request to the largest ID in the finger table but still less than the key_ID
+    else:
+        print("    The key_ID is not in range of my successor, so I'm finding the closest server")
+        closest_server = None
+
+        for ID in finger_table:
+            if(ID < key_ID):
+                closest_server = ID
+        
+        if(closest_server == None):
+            list_finger_table_IDs = list(finger_table.keys()).sort()
+            closest_server = list_finger_table_IDs[-1] 
+        
+        print(f"    Forwarding the PUT-request to closest server: {closest_server}")
         response = requests.post(f"http://{finger_table[closest_server]}/put", json=recieved_data)
-        print(f"{HOSTNAME}:{PORT}: received message from closest server:{server_to_contact}: {response.text}")
+        print(f"    Received response from server:{finger_table[closest_server]}: {response.text}")
 
-    return f"{HOSTNAME}:{PORT}: The client wants to put this data into the system: {recieved_data}...", 200
+        return response.text, 200
+
 
 
 @app.route("/get", methods=["GET"])
 def get_data():
+    print("GET_DATA()")
 
     return f"{HOSTNAME}:{PORT}: Some client wants to get data from me. Trying..."
 
 
-# def forward_request(key, data):
-#     pass
 
+"""
+Returns True if a given key_ID is in the range between a node and its predecessor
+Returns False otherwise
+"""
+def is_ID_in_range(predecessor_ID, node_ID, key_ID):
+    if(node_ID == predecessor_ID):
+        return True
     
+    #If my predecessorID is bigger than myself
+    elif(predecessor_ID > node_ID):
+        #ranges are from predecessor to maximum node IDs AND from 0 to node_ID
+        if((key_ID >= 0 and key_ID <= node_ID) or (key_ID > predecessor_ID and key_ID <= total_IDs)):
+            return True
+    
+    #If my predecessorID is lower than my own ID
+    elif(predecessor_ID < node_ID):
+        #then ranges are from my own ID down to predecessorID+1
+        if(key_ID <= node_ID and key_ID > predecessor_ID):
+            return True
+    
+    #The key_ID is NOT in range
+    return False
+
+
 
 if __name__ == "__main__":
-
     print(f"\n########## Code running at server: {HOSTNAME}:{PORT} ##########")
     
     app.run(host="0.0.0.0", port=PORT, use_reloader=False)  #"0.0.0.0" allows all machines to connect to the node

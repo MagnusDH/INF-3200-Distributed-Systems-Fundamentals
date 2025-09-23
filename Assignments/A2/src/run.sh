@@ -19,7 +19,10 @@ for (( i=0; i<num_servers; i++ )); do
         current_port=$(shuf -i 49152-65535 -n1)
 
         #ssh into each node and start a background server on that node with a specific port number
-        ssh -f ${current_node} "python3 $PWD/server.py ${current_port}"
+        # ssh -f ${current_node} "python3 $PWD/server.py ${current_port} > ${current_node}:${current_port}.log" 
+        ssh -f ${current_node} "cd $(pwd) && nohup python3 -u server.py ${current_port} > server-${current_node}-${current_port}.log 2>&1 &"
+
+
 
         #Add server to list
         server_list+=("${current_node}:${current_port}")

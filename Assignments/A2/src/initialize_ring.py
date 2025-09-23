@@ -17,54 +17,103 @@ def create_ID(server_name):
     while(server_ID in server_info):
         server_ID = (server_ID + 1) % total_IDs
 
-    return server_ID
+    return int(server_ID)
 
 
 def create_finger_table(node_ID):
-    #Create a table with "m" entries
-    finger_table = []
-    for i in range(1, finger_table_entries+1):
+    #Create a table with approximate IDs
+    ish_finger_table = []
+    for i in range(1, m+1):
         ish_ID=(node_ID + 2**(i-1)) % total_IDs
         
-        finger_table.append(ish_ID)
-        
+        ish_finger_table.append(ish_ID)
+    
+    #Sort ish finger_table
+    ish_finger_table.sort()
 
-    #Correct the IDs in the finger table to correspond to the actual server IDs
-    for i in range(len(finger_table)):
-        pos_counter=0   #Counter to check if we have looped around the IDs
-        for ID in server_info:
-            #Return current ID if it is the same or the next server ID 
-            if(ID >= finger_table[i]):
-                finger_table[i] = ID
+    #Convert dictionary of actuall node IDs into a list
+    list_actuall_IDs = []
+    for key in server_info:
+        list_actuall_IDs.append(key)
+    #Sort the list
+    list_actuall_IDs.sort()
+
+
+    #Create actuall finger_table dict with ID as key and IP_address for server as value
+    finger_table = {}
+    for ish_ID in ish_finger_table:
+        successor = None
+        for ID in list_actuall_IDs:
+            if(ID >= ish_ID):
+                successor = ID
                 break
-
-            else:
-                pos_counter+=1
-            
-            #Check if we have looped around
-            if(pos_counter >= len(server_info)):
-                #find the lowest key in the server_info dict
-                lowest_key = min(server_info)
-
-                #Place the first server ID because we looped around
-                finger_table[i] = lowest_key  
         
+        #Check if we looped around without finding a successor node
+        if(successor == None):
+            successor = list_actuall_IDs[0]
+        
+        #Add successor ID to finger table along with corresponding IPaddress
+        finger_table[successor] = server_info[successor]["IP_address"]
+    
 
-    #Create new finger table dict to contain IPaddresses
-    new_finger_table = {}
-    #Go trhough each entry in the finger_table list
-    for ID in finger_table:
-        if(ID in server_info):
-            new_finger_table[ID] = server_info[ID]["IP_address"]
-        else:
-            print("ERROR: somethings wrong when making finger table")
+    #Loop through finger table and remove the servers own ID if it is in the table 
+    identical_key = None
+    for key in finger_table:
+        if(key == node_ID):
+            identical_key = key
+    if(identical_key != None):
+        del finger_table[identical_key]
 
-    return new_finger_table
 
+    #Find the ID of the predecessor server and store it
+    predecessor = None
+    for ID in list_actuall_IDs:
+        if(ID < node_ID):
+            predecessor = ID
+
+    #If no predecessor was found, we looped around, therefore the biggest node ID is the predecessor
+    if(predecessor == None):
+        predecessor = list_actuall_IDs[-1]
+
+    #Set predecessor    
+    server_info[node_ID]["predecessor_ID"] = predecessor
+
+    return finger_table 
+
+
+def find_successor(node_ID, list_all_IDs):
+    successor_ID = None
+    list_all_IDs.sort()
+
+    for ID in list_all_IDs:
+        if(node_ID < ID):
+            successor_ID = ID
+            break
+
+    if(successor_ID == None):
+        successor_ID = list_all_IDs[0]
+
+
+    return successor_ID
+
+
+def find_predecessor(node_ID, list_all_IDs):
+    predecessor_ID = None
+    list_all_IDs.sort()
+
+    for ID in list_all_IDs:
+        if(ID < node_ID):
+            predecessor_ID = ID
+    
+    if(predecessor_ID == None):
+        predecessor_ID = list_all_IDs[-1]
+
+    return predecessor_ID
 
 
 if __name__ == "__main__":
     print("########## INITIALIZE_RING.PY ##########\n")
+
     
     #fetch the list of given server names 
     server_list = sys.argv[1:]
@@ -73,24 +122,33 @@ if __name__ == "__main__":
     server_info = {}
 
     #Total amount if IDs in the ring
+    m = 10
     global total_IDs
-    total_IDs = 2**8
+    total_IDs = 2**m
+
 
     #How many entries a finger table should have
     global finger_table_entries
     finger_table_entries = 8
 
-
+    list_all_IDs = []
     #Create list of IDs for each node
     for server in server_list:
         ID = create_ID(server)
-
-        server_info[ID] = {"IP_address":server, "finger_table": None}
+        list_all_IDs.append(ID)
+        server_info[ID] = {"IP_address":server, "finger_table": None, "successor_ID": None, "predecessor_ID": None}
+    list_all_IDs.sort()
+    print("Actuall nodes in system: ", list_all_IDs)
     
-    #Create finger tables for each server
+    
+    #Create successor, predecessor and finger_table for each server
     for ID in server_info:
+        server_info[ID]["successor_ID"] = find_successor(ID, list_all_IDs)
+        server_info[ID]["predecessor_ID"] = find_predecessor(ID, list_all_IDs)
+    
         finger_table = create_finger_table(ID)
         server_info[ID]["finger_table"] = finger_table
+
 
 
     #Send message to each server in the ring with their ID and finger table
@@ -99,7 +157,9 @@ if __name__ == "__main__":
             #Prepare a payload to send
             message_payload = {
                 "ID": ID,
-                "finger_table": server_info[ID]["finger_table"]
+                "finger_table": server_info[ID]["finger_table"],
+                "successor_ID": server_info[ID]["successor_ID"],
+                "predecessor_ID": server_info[ID]["predecessor_ID"]
             }
 
             #Send message to server
