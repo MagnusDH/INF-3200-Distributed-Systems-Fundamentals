@@ -138,7 +138,8 @@ if __name__ == "__main__":
         list_all_IDs.append(ID)
         server_info[ID] = {"IP_address":server, "finger_table": None, "successor_ID": None, "predecessor_ID": None}
     list_all_IDs.sort()
-    print("Actuall nodes in system: ", list_all_IDs)
+    
+    print("Nodes in system: ", list_all_IDs)
     
     
     #Create successor, predecessor and finger_table for each server

@@ -2,7 +2,7 @@ import requests
 import sys
 import json
 import socket
-
+import time
 
 
 #Fetch server name+port ad convert them to a list 
@@ -17,46 +17,62 @@ def PUT_data(data_to_put, server_address):
     try:
         response = requests.post(f"http://{server_to_contact}/put", json=data_to_put)
         # print(f"client.py: received message from {server_to_contact}: {response.text}")
+        return response
 
     except Exception as e:
         print(f"client.py: request sent to {server_to_contact} failed. ERROR: {e}\n")
 
 
-def GET_data(requested_data, server_address):
-    print("GET_DATA()")
-    # try:
-    #     print(f"\nclient.py: sending GET-request to server:{server_address}...")
-    #     recieved_data = requests.get(f"http://{server_address}/get")
-    #     print(f"client.py: received data from {server_address}: {recieved_data.text}")
+def GET_data(request_data, server_address):
+    # print("\nGET_DATA()")
+    try:
+        # print(f"\nclient.py: sending GET-request to server:{server_address}...")
+        response = requests.get(f"http://{server_address}/get?key={request_data}")
+        # print(f"client.py: received data from {server_address}: {response.text}")
 
-    #     if recieved_data.status_code == 200:
-    #         print(f"Value for '{requested_data}': {recieved_data.text}")
-    #     else:
-    #         print(f"Key '{requested_data}' not found. Status code: {recieved_data.status_code}")
+        return response
 
-
-    # except Exception as e:
-    #     print(f"client.py: GET-request sent to {server_address} failed. ERROR: {e}\n")
+    except Exception as e:
+        print(f"client.py: GET-request sent to {server_address} failed. ERROR: {e}\n")
 
 
 
 if __name__ == "__main__":
     print("\n########### Client.py ###########\n")
 
-    #create some data to send
-    data_to_put = {
-        "data": ["apple", "banana"],
-        "client_IP": client_IP_address
-    }
+    response = requests.get(f"http://{server_to_contact}/network")
 
-    print("client.py: Trying to put data to put into system")
-    #try to put data in system
-    PUT_data(data_to_put, server_to_contact)
+    print(response.text)
 
-    import time
-    time.sleep(2)
 
-    #Try to retrieve data
-    print("client.py: Trying to retrieve data from system")
-    key_to_retrieve = "apple"
-    retrieved_data = get_data(key_to_retrieve, server_to_contact)
+
+
+    # print("    Putting 100 values into system")
+    # time.sleep(2)
+    # #create some data to send and request
+    # for i in range(100):
+    #     data_to_put = {
+    #         "data": [str(i), str(i*10)]
+    #     }
+
+    #     response = PUT_data(data_to_put, server_to_contact)
+    #     print("    response.text = ", response.text)
+
+    # time.sleep(2)
+
+    # #Retrieve data
+    # print(f"\n    Retrieving 100 values from system")
+    # time.sleep(2)
+
+    # for i in range(100):
+    #     #Generate key
+    #     key_to_retrieve = str(i)
+
+    #     #request key
+    #     # print("    requesting key:", key_to_retrieve)
+        
+    #     response = GET_data(key_to_retrieve, server_to_contact)
+
+    #     print("    retrieved value: ", response.text)
+
+    #     # print(f"    Retrieved data = {response.text}")
