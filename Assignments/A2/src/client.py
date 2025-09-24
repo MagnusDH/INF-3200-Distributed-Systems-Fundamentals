@@ -38,41 +38,62 @@ def GET_data(request_data, server_address):
 
 
 if __name__ == "__main__":
-    print("\n########### Client.py ###########\n")
+    # print("\n########### Client.py ###########\n")
 
+    #Get list of nodes for a server
     response = requests.get(f"http://{server_to_contact}/network")
 
-    print(response.text)
+    print(f"List of available nodes from {server_to_contact}: ", response.text)
+
+    #Put value into system
+    print("Putting 100 values into system...\n")
+    time.sleep(1)
+    successfull_puts = []
+
+    #Start measuring PUT time
+    start_time_put = time.time()
+
+    for i in range(100):
+        key = str(i)
+        value = str(i*10)
+
+        response = requests.put(f"http://{server_to_contact}/storage/"+key, value)
+
+        if(response.status_code == 200):
+            successfull_puts.append(value)
+    
+    #Stop PUT time
+    end_time_put = time.time()
+
+    #Measure total time used for put operations
+    total_time_put = end_time_put - start_time_put
+    put_throughput = 100 / total_time_put
 
 
-
-
-    # print("    Putting 100 values into system")
+    #Retrieve value from system
     # time.sleep(2)
-    # #create some data to send and request
-    # for i in range(100):
-    #     data_to_put = {
-    #         "data": [str(i), str(i*10)]
-    #     }
-
-    #     response = PUT_data(data_to_put, server_to_contact)
-    #     print("    response.text = ", response.text)
-
-    # time.sleep(2)
-
-    # #Retrieve data
-    # print(f"\n    Retrieving 100 values from system")
-    # time.sleep(2)
-
-    # for i in range(100):
-    #     #Generate key
-    #     key_to_retrieve = str(i)
-
-    #     #request key
-    #     # print("    requesting key:", key_to_retrieve)
+    # print("\nTrying to retrieve 100 values from system...\n")
+    successfull_gets = []
+    #Start measuring PUT time
+    start_time_get = time.time()
+    for i in range(100):
+        key = str(i)
+        response = requests.get(f"http://{server_to_contact}/storage/"+key)
         
-    #     response = GET_data(key_to_retrieve, server_to_contact)
+        if(response.status_code == 200):
+            successfull_gets.append(response.text)
+    
+    #Stop PUT time
+    end_time_get = time.time()
 
-    #     print("    retrieved value: ", response.text)
+    #Calculate used time
+    total_time_get = end_time_get - start_time_get
+    get_throughput = 100 / total_time_get
 
-    #     # print(f"    Retrieved data = {response.text}")
+    print(f"\nSuccessfully put: {len(successfull_puts)} values into the system")
+    print(f"Values in system: {successfull_puts}\n")
+    print(f"\nSuccessfully retrieved: {len(successfull_gets)} from system")
+    print(f"Retrieved values: {successfull_gets}")
+    
+    print(f"\nTime used put: {total_time_put}")
+    print(f"\nTime used get: {total_time_get}")

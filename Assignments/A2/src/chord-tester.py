@@ -253,11 +253,11 @@ def main(args):
     simple_check(nodes)
     print()
 
-    # retrieve_from_different_nodes(nodes)
-    # print()
+    retrieve_from_different_nodes(nodes)
+    print()
 
-    # get_nonexistent_key(nodes)
-    # print()
+    get_nonexistent_key(nodes)
+    print()
 
 if __name__ == "__main__":
 

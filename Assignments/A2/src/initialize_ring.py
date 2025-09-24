@@ -14,8 +14,11 @@ def create_ID(server_name):
     server_ID = hash_int % total_IDs
     
     #Check if ID has been created before
-    while(server_ID in server_info):
-        server_ID = (server_ID + 1) % total_IDs
+    # while(server_ID in server_info):
+    #     server_ID = (server_ID + 1) % total_IDs
+
+    if(server_ID in server_info):
+        print("THERE WAS AN ID COLLISION IN CREATE_ID()!!!!!!")
 
     return int(server_ID)
 
@@ -112,8 +115,6 @@ def find_predecessor(node_ID, list_all_IDs):
 
 
 if __name__ == "__main__":
-    print("########## INITIALIZE_RING.PY ##########\n")
-
     
     #fetch the list of given server names 
     server_list = sys.argv[1:]
@@ -122,7 +123,7 @@ if __name__ == "__main__":
     server_info = {}
 
     #Total amount if IDs in the ring
-    m = 10
+    m = 32
     global total_IDs
     total_IDs = 2**m
 
@@ -139,7 +140,7 @@ if __name__ == "__main__":
         server_info[ID] = {"IP_address":server, "finger_table": None, "successor_ID": None, "predecessor_ID": None}
     list_all_IDs.sort()
     
-    print("Nodes in system: ", list_all_IDs)
+    # print("Nodes in system: ", list_all_IDs)
     
     
     #Create successor, predecessor and finger_table for each server
@@ -164,12 +165,10 @@ if __name__ == "__main__":
             }
 
             #Send message to server
-            # print(f"initialize_ring.py: sending message to: {server_info[ID]["IP_address"]}")
             response = requests.post(f"http://{server_info[ID]["IP_address"]}/initialize", json=message_payload)
-            # print(f"initialize_ring.py: recieved response: {response.text}")
         
         except requests.exceptions.Timeout:
-            print("Server did not respond (timeout)")
+            print("Initialize_ring.py: Server did not respond (timeout)")
         except requests.exceptions.ConnectionError:
-            print("Could not connect to server")
+            print("Initialize_ring.py: Could not connect to server")
 

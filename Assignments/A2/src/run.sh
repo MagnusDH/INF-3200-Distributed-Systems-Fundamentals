@@ -21,8 +21,8 @@ for (( i=0; i<num_servers; i++ )); do
 
         #ssh into each node and start a background server on that node with a specific port number
         # ssh -f ${current_node} "python3 $PWD/server.py ${current_port}" 
-        # ssh -f ${current_node} "python3 $PWD/server.py ${current_port} > ${current_node}:${current_port}.log" 
-        ssh -f ${current_node} "cd $(pwd) && nohup python3 -u server.py ${current_port} > server-${current_node}-${current_port}.log 2>&1 &"
+        ssh -f ${current_node} "python3 $PWD/server.py ${current_port} > ${current_node}:${current_port}.log" 
+        # ssh -f ${current_node} "cd $(pwd) && nohup python3 -u server.py ${current_port} > server-${current_node}-${current_port}.log 2>&1 &"
 
         #Add server to list
         server_list+=("${current_node}:${current_port}")
@@ -30,11 +30,14 @@ done
 
 #Run a python file that initializes the ring with IDs and finger tables
 sleep 2
-# echo -e "Initializing ring...\n"
+echo -e "Initializing ring...\n"
 python3 initialize_ring.py ${server_list[@]}
 
 #Run client-py to simulate a user of the system
-# python3 client.py ${server_list[0]}
-echo -e "Running chord-tester.py...\n"
 sleep 2
-python3 chord-tester.py ${server_list[0]}
+echo -e "Running client...\n"
+python3 client.py ${server_list[0]}
+
+# echo -e "Running chord-tester.py...\n"
+# sleep 2
+# python3 chord-tester.py ${server_list[0]}
