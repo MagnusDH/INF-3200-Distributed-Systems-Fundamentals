@@ -35,12 +35,6 @@
         new_node -> nS
         new_node <- nS
 
-        
-        * The old_node finds the successor of new_node
-    
-
-        * when an Nth node joins (or leaves) the network, only an  O(1/N) fraction of the keys are moved to a different location
-        * In a n-node network, each node maintains information about only O(log N) other nodes, and a lookup requires O(log N) Hashing messages.
     
 ## How a node leaves the network:
 * Current_node sends to its successor:
