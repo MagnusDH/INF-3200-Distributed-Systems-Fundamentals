@@ -1,3 +1,15 @@
+# To run code
+* Api-skeleton.py is the file I am implementing node logic in
+* api-test.py sends HTTP requests to my node testing each function. A node IP:address is required when running this file
+* join_experiment.py requires a list of nodes IP:addresses
+
+# Program flow
+* start a server at a node
+* run api-test.py to perform tests on the started node
+* 
+
+
+
 # Chord protocol
 
 ## What variables each node must store:
