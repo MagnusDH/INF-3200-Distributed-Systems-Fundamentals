@@ -30,7 +30,7 @@ for (( i=0; i<num_servers; i++ )); do
 done
 
 
-sleep 2
+sleep 1
 echo -e "Running controller...\n"
 python3 controller.py ${server_list[@]}
 
@@ -42,6 +42,20 @@ python3 controller.py ${server_list[@]}
 # echo -e "Running api-test.py...\n"
 # python3 api-test.py ${server_list[0]}
 
-# sleep 2
+# sleep 1
 # echo -e "Running join_experiment.py...\n"
 # python3 join_experiment.py ${server_list[@]}
+
+
+sleep 2
+echo -e "Killing all processes\n"
+
+for (( i=0; i<num_servers; i++ )); do
+
+        node_name=${available_nodes[$(( i % num_servers ))]}
+
+        ssh ${node_name} killall -u $(id -un)
+done
+
+echo -e "Killed all processes\n"
+

@@ -1,0 +1,166 @@
+Node ID: 932
+Node_IP: c7-7:61179
+Node hash: d06bb010bde5b8edcb64e4dae814970bb68003a4
+Node status: new
+
+STABILIZE()
+ * Serving Flask app 'node'
+ * Debug mode: off
+
+HELP_JOIN()
+     Only one node in ring
+
+STABILIZE()
+
+UPDATE_SUCCESSORS()
+    Successors: [(18, 'c11-13:50973')]
+    Predecessor: (18, 'c11-13:50973')
+    finger_table: []
+
+HELP_STABILIZE()
+
+HELP_JOIN()
+
+HELP_STABILIZE()
+
+HELP_JOIN()
+    Forwarding request to 18 to find successor
+
+STABILIZE()
+
+UPDATE_SUCCESSORS()
+    Successors: [(18, 'c11-13:50973'), [192, 'c7-20:55722']]
+    Predecessor: (361, 'c11-3:52667')
+    finger_table: []
+
+HELP_STABILIZE()
+
+HELP_STABILIZE()
+
+STABILIZE()
+
+UPDATE_SUCCESSORS()
+    Successors: [(18, 'c11-13:50973'), [192, 'c7-20:55722']]
+    Predecessor: (361, 'c11-3:52667')
+    finger_table: []
+
+HELP_STABILIZE()
+
+STABILIZE()
+
+UPDATE_SUCCESSORS()
+    Successors: [(18, 'c11-13:50973'), [192, 'c7-20:55722']]
+    Predecessor: (361, 'c11-3:52667')
+    finger_table: []
+
+HELP_STABILIZE()
+
+STABILIZE()
+
+UPDATE_SUCCESSORS()
+    Successors: [(18, 'c11-13:50973'), [192, 'c7-20:55722']]
+    Predecessor: (361, 'c11-3:52667')
+    finger_table: []
+
+HELP_STABILIZE()
+
+STABILIZE()
+
+UPDATE_SUCCESSORS()
+    Successors: [(18, 'c11-13:50973'), [192, 'c7-20:55722']]
+    Predecessor: (361, 'c11-3:52667')
+    finger_table: []
+
+HELP_LEAVE()
+
+HELP_STABILIZE()
+
+STABILIZE()
+
+UPDATE_SUCCESSORS()
+    Successors: [(18, 'c11-13:50973'), [192, 'c7-20:55722']]
+    Predecessor: [192, 'c7-20:55722']
+    finger_table: []
+
+HELP_STABILIZE()
+
+STABILIZE()
+
+UPDATE_SUCCESSORS()
+    Successors: [(18, 'c11-13:50973'), [192, 'c7-20:55722']]
+    Predecessor: [192, 'c7-20:55722']
+    finger_table: []
+
+HELP_STABILIZE()
+
+STABILIZE()
+
+UPDATE_SUCCESSORS()
+    Successors: [(18, 'c11-13:50973'), [192, 'c7-20:55722']]
+    Predecessor: [192, 'c7-20:55722']
+    finger_table: []
+
+HELP_STABILIZE()
+
+STABILIZE()
+
+UPDATE_SUCCESSORS()
+    Successors: [(18, 'c11-13:50973'), [192, 'c7-20:55722']]
+    Predecessor: [192, 'c7-20:55722']
+    finger_table: []
+
+HELP_STABILIZE()
+
+STABILIZE()
+
+UPDATE_SUCCESSORS()
+    Successors: [(18, 'c11-13:50973'), [192, 'c7-20:55722']]
+    Predecessor: [361, 'c11-3:52667']
+    finger_table: []
+
+HELP_STABILIZE()
+
+STABILIZE()
+
+UPDATE_SUCCESSORS()
+    Successors: [(18, 'c11-13:50973'), [192, 'c7-20:55722']]
+    Predecessor: [361, 'c11-3:52667']
+    finger_table: []
+
+HELP_STABILIZE()
+
+STABILIZE()
+
+UPDATE_SUCCESSORS()
+    Successors: [(18, 'c11-13:50973'), [192, 'c7-20:55722']]
+    Predecessor: [361, 'c11-3:52667']
+    finger_table: []
+
+HELP_STABILIZE()
+
+STABILIZE()
+
+UPDATE_SUCCESSORS()
+    Successors: [(18, 'c11-13:50973'), [192, 'c7-20:55722']]
+    Predecessor: [361, 'c11-3:52667']
+    finger_table: []
+
+HELP_STABILIZE()
+
+STABILIZE()
+
+UPDATE_SUCCESSORS()
+    Successors: [(18, 'c11-13:50973'), [192, 'c7-20:55722']]
+    Predecessor: [361, 'c11-3:52667']
+    finger_table: []
+
+HELP_STABILIZE()
+
+STABILIZE()
+
+UPDATE_SUCCESSORS()
+    Successors: [(18, 'c11-13:50973'), [192, 'c7-20:55722']]
+    Predecessor: [361, 'c11-3:52667']
+    finger_table: []
+
+HELP_STABILIZE()

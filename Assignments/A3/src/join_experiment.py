@@ -26,7 +26,7 @@ print("Received host:port pairs:", host_ports)
 for node in host_ports[1:]:
     join_ring(node, host_ports[0])
     if graceful_test:
-        time.sleep(1)
+        time.sleep(2)
 
 unique_nodes_in_ring = set()
 unique_nodes_in_ring.add(host_ports[0])
@@ -36,9 +36,12 @@ end_time = start_time + max_test_time
 
 while len(unique_nodes_in_ring) < len(host_ports) and time.time() < end_time:
     info = get_info(current_node)
-    if "successor" in info:
+    if "successor" in info: 
         unique_nodes_in_ring.add(info["successor"])
         current_node = info["successor"]
+    else:
+        print("break")
+        break
 
 if len(unique_nodes_in_ring) == len(host_ports):
     print("All nodes have successfully joined the ring.")

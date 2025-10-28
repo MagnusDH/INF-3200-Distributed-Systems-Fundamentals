@@ -25,15 +25,40 @@
 * If a retrieve/store request for a key is forwarded to a node that does not respond, then another node should be tried (for example the next entry in the successor_list or another close entry in the finger table) 
 
 ## How a new node joins the network:
-* The new_node contacts any existing node in the ring (lets call it node_2)
-* new_node assigns node_2 as its successor
+* The new_node contacts any existing node in the ring (lets call it node_2) and provides its ID and IP:address
+* node_2 makes checks to find out who should be the successor of new_node:
+    * node_2 is the successor of new_node
+        * node_2 tells new_node that node_2 is the successor
+        * node_2 gives its successor list to new_node
+        * node_2 tells new_node who node_2s predecessor was
+        * node_2 updated its predecessor to new_node    
+        
+        * new_node assigns node_2 as its successor
+        * new_node recieves the successor list of node_2 and updates its successor list
+        * new_node assigns node_2s predecessor as its predecessor
+    
+    * is new_node the successor of node_2?
+        * node_2 tells new_node that node_2 is its predecessor
+        * node_2 gives its successor list to new_node
+        * node_2 assigns new_node as its successor and updates its successor list
+        * new_node recieves successor list from node_2 and updates its successor list
+        * new_node assigns node_2 as its predecessor
+
+    
+    * node_2 does not know the successor
+        * forward the reqest to closest node responsible for new_node->ID
+
+    * new_node calls stabilize at the end?
+
+
+<!-- * new_node assigns node_2 as its successor
 * node_2 assigns new_node as its predecessor
 * when node_2's actuall predecessor (node_1) calls "stabilize()", node_1 asks its successor (node_2) for its predecessor, which is now new_node, then assigns new_node as it successor
 * Finaly node_1 notifies new_node about this change, and new_node assigns node_1 as its predecessor 
 
         nP -> nS
         new_node -> nS
-        new_node <- nS
+        new_node <- nS -->
 
     
 ## How a node leaves the network:
