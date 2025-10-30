@@ -32,7 +32,7 @@ done
 
 sleep 1
 echo -e "Running controller...\n"
-python3 controller.py ${server_list[@]}
+python3 controller.py ${server_list[@]} ${num_servers}
 
 
 

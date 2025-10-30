@@ -293,6 +293,61 @@ def closest_preceding_node(ID):
     return None
 
 
+@app.route('/check_stable_network', methods=['POST'])
+def check_stable_network():
+    print("\nCHECK_STABLE_NETWORK()")
+
+    try:
+        received_data = request.get_json(force=True)
+    except Exception as e:
+        print(f"    ERROR parsing JSON: {e}")
+        return jsonify({"error": "invalid json"}), 400
+    
+    #Unpack message
+    received_data = request.get_json()
+    start_node = received_data["start_node"]
+    visited = received_data["visited"]
+    num_hops = received_data["num_hops"]
+    first = received_data["first"]
+
+
+    if(first == True):
+        print(f"    node_IP: {node_ID_IP[1]}, start_node: {start_node}")
+
+    #This is the second time this request reaches the start node
+    if(first == False and start_node == node_ID_IP[1]):
+        return_data = {
+            "start_node": node_ID_IP,
+            "visited": visited,
+            "num_hops": num_hops,
+            "first": first}
+        #Return message to original sender
+        return jsonify(return_data), 200
+    
+    else:
+        num_hops += 1
+        first = False
+        #If my ID is not already in the set
+        if(node_ID_IP[0] not in visited):
+            visited.append(node_ID_IP[0])
+
+        forward_data = {
+            "start_node": start_node,
+            "visited": visited,
+            "num_hops": num_hops,
+            "first": first}
+        
+        #Forward request to my successor
+        response = requests.post(f"http://{successors[0][1]}/check_stable_network", json=forward_data)
+
+        return Response(
+            response=response.content,
+            status=response.status_code,
+            content_type=response.headers.get('Content-Type', 'application/json')
+        )
+
+
+
 @app.route('/find_successor', methods=['POST'])
 def find_successor():
     global storage, node_ID_IP, successors, predecessor, finger_table, node_state, m
@@ -916,6 +971,7 @@ def help_join():
         #No successor or predecessor node was found
         return "Not found", 404
         
+
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
