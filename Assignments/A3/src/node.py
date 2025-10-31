@@ -259,13 +259,13 @@ def stabilize():
                             print(f"    New successor: {successors[0][0]}")
 
 
-                # #Node does not respond    
-                # except requests.exceptions.RequestException:
-                #     print(f"    Could not contact successor {successors[0][0]}, popping from list")
-                #     #Remove successor from successors list
-                #    if(successors):     
-                #       successors.pop(0)
-                #     print(f"    New successor: {successors[0][0]}")
+                #Node does not respond    
+                except requests.exceptions.RequestException:
+                    print(f"    Could not contact successor {successors[0][0]}, popping from list")
+                    #Remove successor from successors list
+                    if(successors):     
+                        successors.pop(0)
+                        # print(f"    New successor: {successors[0][0]}")
             
                 except Exception as error:
                     print(f"    Some error occured: '{error}'")
@@ -293,6 +293,7 @@ def closest_preceding_node(ID):
     return None
 
 
+#this function only stops if start node is reached, but if start node leaves, then this never stops. find a solution!!!!!!!!!!!!!!!!!!
 @app.route('/check_stable_network', methods=['POST'])
 def check_stable_network():
     print("\nCHECK_STABLE_NETWORK()")
@@ -331,22 +332,29 @@ def check_stable_network():
         if(node_ID_IP[0] not in visited):
             visited.append(node_ID_IP[0])
 
-        forward_data = {
-            "start_node": start_node,
-            "visited": visited,
-            "num_hops": num_hops,
-            "first": first}
         
         #Forward request to my successor
-        response = requests.post(f"http://{successors[0][1]}/check_stable_network", json=forward_data)
+        if(successors):
+            for successor in successors:
+                #Do not forward to myself
+                if(successor[0] != node_ID_IP[0]):
+                    forward_data = {
+                        "start_node": start_node,
+                        "visited": visited,
+                        "num_hops": num_hops,
+                        "first": first}
+                    response = requests.post(f"http://{successor[1]}/check_stable_network", json=forward_data)
 
-        return Response(
-            response=response.content,
-            status=response.status_code,
-            content_type=response.headers.get('Content-Type', 'application/json')
-        )
-
-
+                    return Response(
+                        response=response.content,
+                        status=response.status_code,
+                        content_type=response.headers.get('Content-Type', 'application/json')
+                    )
+            
+        
+        return "Could not check stable network and forward to my successor", 500
+            
+    
 
 @app.route('/find_successor', methods=['POST'])
 def find_successor():
@@ -708,7 +716,7 @@ def leave_ring():
                 #Remove successor from successors list
                 if(successors):
                     successors.pop(0)
-                    print(f"    New successor: {successors[0][0]}")
+                    # print(f"    New successor: {successors[0][0]}")
         
 
     #No nodes responded to the leave call

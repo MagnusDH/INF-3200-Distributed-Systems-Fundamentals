@@ -17,7 +17,9 @@ for (( i=0; i<num_servers; i++ )); do
         current_node=${available_nodes[$(( i % num_servers ))]}
 
         #Create a unique port number for this server
-        current_port=$(shuf -i 49152-65535 -n1)
+        # current_port=$(shuf -i 49152-65535 -n1)
+        current_port=$(shuf -i 65000-65535 -n1)
+
 
         #ssh into each node and start a background server on that node with a specific port number
         # ssh -f ${current_node} "python3 $PWD/node.py ${current_node}:${current_port}" 
