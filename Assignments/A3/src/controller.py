@@ -28,8 +28,6 @@ def is_network_stable(start_node_IP, num_nodes):
 
             #If visited list is the length of list_nodes, then all nodes have been visited and ring is stable
             if(len(visited) == num_nodes):
-                print(f"Len(visited): {len(visited)}, num_nodes: {num_nodes}")
-                print("Number of hops made: ", num_hops)
                 return True
             
             else:
@@ -69,8 +67,7 @@ def shrink_ring(n_nodes):
             
         except requests.exceptions.RequestException as e:
             print(f"Node {i} failed to leave: {e}")
-        
-        # time.sleep(1)
+            sys.exit(1)   
 
 
 #Crashes n_nodes in the ring
@@ -83,6 +80,8 @@ def crash_nodes(n_nodes):
             
         except requests.exceptions.RequestException as e:
             print(f"Node {i} failed to crash: {e}")
+            sys.exit(1)   
+
         
         time.sleep(1)
 
@@ -119,7 +118,8 @@ if __name__ == '__main__':
             break
         else:
             print("RING NOT STABLE", counter)
-            if(counter == 30):
+            if(counter == 50):
+                sys.exit(1)
                 break
         
         time.sleep(2)
@@ -162,7 +162,7 @@ if __name__ == '__main__':
 
 
     ############ Crash network ############  
-    crash_num_nodes = 2
+    crash_num_nodes = 31
     #Start timer
     start_crash_time = time.time()
 
@@ -181,7 +181,8 @@ if __name__ == '__main__':
             break
         else:
             print("RING NOT STABLE", counter)
-            if(counter == 30):
+            if(counter == 50):
+                sys.exit(1)
                 break
         
         time.sleep(2)
