@@ -33,20 +33,20 @@ done
 
 
 sleep 1
-echo -e "Running controller...\n"
-python3 controller.py ${server_list[@]} ${num_servers}
+# echo -e "Running controller...\n"
+# python3 controller.py ${server_list[@]} ${num_servers}
 
 
 
 # echo -e "List of running nodes:\n${server_list[@]}"
 
-# sleep 2
-# echo -e "Running api-test.py...\n"
-# python3 api-test.py ${server_list[0]}
+sleep 2
+echo -e "Running api-test.py...\n"
+python3 api-test.py ${server_list[0]}
 
-# sleep 1
-# echo -e "Running join_experiment.py...\n"
-# python3 join_experiment.py ${server_list[@]}
+sleep 1
+echo -e "Running join_experiment.py...\n"
+python3 join_experiment.py ${server_list[@]}
 
 
 sleep 2

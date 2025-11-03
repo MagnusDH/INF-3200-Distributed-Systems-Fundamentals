@@ -47,7 +47,9 @@ def test_sim_recover():
     assert r.status_code == 200, "sim-recover returned not 200"
 
 def test_join():
-    r = requests.post(f"http://{BASE}/join?nprime=localhost:10001")
+    print("TEST JOIN, BASE=", BASE)
+    # r = requests.post(f"http://{BASE}/join?nprime=localhost:10001")
+    r = requests.post(f"http://{BASE}/join?nprime={BASE}")
     print("POST /join?nprime=localhost:10001:", r.status_code, r.text)
     assert r.status_code == 200, "join returned not 200"
 
